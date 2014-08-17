@@ -1,4 +1,6 @@
 include <configuration.scad>;
+include <fan_mount.scad>;
+include <keystone.scad>;
 
 separation = 44;  // Distance between ball joint mounting faces.
 offset = 22;  // Same as DELTA_EFFECTOR_OFFSET in Marlin.
@@ -8,11 +10,30 @@ height = 10;
 cone_r1 = 2.5;
 cone_r2 = 14;
 
+module vholes(mp)
+{
+    rotate([0, 0, mp - 10]) translate([0, mount_radius - 1, 0]) 
+             cylinder(r=m3_radius, h=2*height, center=true, $fn=12);
+    rotate([0, 0, mp + 10]) translate([0, mount_radius - 1, 0]) 
+             cylinder(r=m3_radius, h=2*height, center=true, $fn=12);
+}
+
+module enhancement_cuts()
+{
+    vholes(180);
+    vholes(60);
+    vholes(300);
+    // Sensor
+    rotate([0, 0, 180]) translate([0, mount_radius+10, 0]) 
+             cylinder(r=2.5, h=8*height, center=true, $fn=12);
+}
 
 module effector() {
   difference() {
     union() {
       cylinder(r=offset-2, h=height, center=true, $fn=36);
+      rotate([0, 0, 180]) translate([-10, mount_radius, -5]) cube([20,15,2]);
+      
       for (a = [60:120:359]) rotate([0, 0, a]) {
 	rotate([0, 0, 30]) translate([offset-2, 0, 0])
 	  cube([4, 12, height], center=true);
@@ -37,9 +58,13 @@ module effector() {
 	cylinder(r1=hotend_radius, r2=hotend_radius+1, h=height+1, $fn=36);
     for (a = [0:120:359]) rotate([0, 0, a]) {
       translate([0, mount_radius, 0])
-	cylinder(r=m3_wide_radius, h=2*height, center=true, $fn=12);
-    }
+	    cylinder(r=m3_wide_radius, h=2*height, center=true, $fn=12);
+      }
+    enhancement_cuts();
   }
-}
+ 
+ }
+
+  
 
 translate([0, 0, height/2]) effector();
